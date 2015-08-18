@@ -1,0 +1,14 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"descore": "1.2.7",
+		"derelict-assimp3": "1.0.1",
+		"derelict-util": "2.0.0",
+		"derelict-ft": "1.0.2",
+		"des": "1.4.1",
+		"derelict-sdl2": "1.9.5",
+		"derelict-il": "1.0.0",
+		"dsfml": "~master",
+		"derelict-gl3": "1.0.13"
+	}
+}

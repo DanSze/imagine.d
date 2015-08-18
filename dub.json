@@ -1,0 +1,9 @@
+{
+	"name": "imagined",
+	"description": "A minimal D application.",
+	"copyright": "Copyright © 2015, Dan",
+	"authors": ["DanSze"],
+	"dependencies": {
+		"dsfml:graphics": "~master"	
+	},
+}
