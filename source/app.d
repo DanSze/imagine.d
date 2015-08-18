@@ -57,8 +57,10 @@ void update (RenderWindow window, Sprite spr) {
 }
 
 void main(string[] args) {
-	if (args.length < 0 || args[0] != "cached") {
+	if (args.length < 2 || args[1] != "--useCache") {
 		cache();
+	} else {
+		writeln("Using cached stuff");
 	}
 	auto textures = loadCache();
 	auto window = new RenderWindow(VideoMode(maxSize,maxSize),"Progress View");
@@ -68,14 +70,16 @@ void main(string[] args) {
 	exists("res/outputs") ? 0 : mkdir("res/outputs"); //I am satan.
 
 	for (int j = 0; j < 20; j++) {
-		Texture t = construct(textures);
+		writefln("%d/20",j);
+		Texture t = construct(textures, maxSize);
 
-		auto haarOut = "res/outputs-haar/out%d.bmp".format(j);
-		auto dehaarOut = "res/outputs/out%d.bmp".format(j);
+		string haarOut = "res/outputs-haar/out%02d.bmp".format(j);
 		t.save(haarOut);
 
 		SplitImage i = SplitImage(haarOut);
 		i.dehaar2d;
+
+		string dehaarOut = "res/outputs/out%02d.bmp".format(j);
 		i.save(dehaarOut);
 
 		spr.setTexture(load(dehaarOut));
@@ -85,6 +89,7 @@ void main(string[] args) {
     while (window.isOpen())
     {
         Event event;
+		window.update(spr);
 
         while(window.pollEvent(event))
         {
