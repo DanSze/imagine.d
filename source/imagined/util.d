@@ -24,7 +24,7 @@ Texture load(string path) {
 
 void save(Texture t, string path) {
 	Image i = t.copyToImage();
-	i.saveToFile(path);
+	i.saveToFile(path ~ "\0");
 }
 
 class Scaler {

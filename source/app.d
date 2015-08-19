@@ -4,8 +4,10 @@ import std.stdio;
 import std.format;
 import std.file;
 import std.algorithm;
+import std.array;
 import std.regex;
 import std.datetime;
+import std.random;
 
 import dsfml.graphics;
 import imagine.d;
@@ -50,12 +52,6 @@ Texture[] loadCache() {
 	return textures;
 }
 
-void update (RenderWindow window, Sprite spr) {
-    window.clear();
-    window.draw(spr);
-    window.display();
-}
-
 void main(string[] args) {
 	if (args.length < 2 || args[1] != "--useCache") {
 		cache();
@@ -63,40 +59,21 @@ void main(string[] args) {
 		writeln("Using cached stuff");
 	}
 	auto textures = loadCache();
-	auto window = new RenderWindow(VideoMode(maxSize,maxSize),"Progress View");
-	Sprite spr = new Sprite();
-
 	exists("res/outputs-haar") ? 0 : mkdir("res/outputs-haar"); //I am satan.
 	exists("res/outputs") ? 0 : mkdir("res/outputs"); //I am satan.
 
-	for (int j = 0; j < 20; j++) {
-		writefln("%d/20",j);
-		Texture t = construct(textures, maxSize);
+	for (int j = 1; j <= 50; j++) {
+		writefln("%d/50",j);
+		Texture t = construct(textures.randomSample(3).array);
 
-		string haarOut = "res/outputs-haar/out%02d.bmp".format(j);
+		string haarOut = "res/outputs-haar/out%02d.png".format(j)[0..26];
 		t.save(haarOut);
 
 		SplitImage i = SplitImage(haarOut);
 		i.dehaar2d;
 
-		string dehaarOut = "res/outputs/out%02d.bmp".format(j);
+		string dehaarOut = "res/outputs/out%02d.png".format(j)[0..21];
 		i.save(dehaarOut);
-
-		spr.setTexture(load(dehaarOut));
-		window.update(spr);
 	}
 
-    while (window.isOpen())
-    {
-        Event event;
-		window.update(spr);
-
-        while(window.pollEvent(event))
-        {
-            if(event.type == event.EventType.Closed)
-            {
-                window.close();
-            }
-        }
-    }
 }

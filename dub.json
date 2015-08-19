@@ -4,6 +4,6 @@
 	"copyright": "Copyright © 2015, Dan",
 	"authors": ["DanSze"],
 	"dependencies": {
-		"dsfml:graphics": "~master"	
+		"dsfml:graphics": "~master"
 	},
 }

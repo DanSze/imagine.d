@@ -8,7 +8,12 @@ import std.exception;
 import imagine.util;
 import dsfml.graphics;
 
-Texture construct (Texture[] donor, uint s) {
+Texture construct (Texture[] donor) {
+	uint s = 0;
+	foreach (t; donor) {
+		s = s < t.getSize().x ? t.getSize().x : s;
+	}
+
 	RenderTexture reciever = new RenderTexture();
 	reciever.create(s,s);
 
