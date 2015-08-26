@@ -66,7 +66,7 @@ void main(string[] args) {
 		writefln("%d/50",j);
 		Texture t = construct(textures.randomSample(3).array);
 
-		string haarOut = "res/outputs-haar/out%02d.png".format(j)[0..26];
+		string haarOut = "res/outputs-haar/out%d.png".format(j)[0..26];
 		t.save(haarOut);
 
 		SplitImage i = SplitImage(haarOut);
