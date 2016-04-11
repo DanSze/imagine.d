@@ -66,13 +66,13 @@ void main(string[] args) {
 		writefln("%d/50",j);
 		Texture t = construct(textures.randomSample(3).array);
 
-		string haarOut = "res/outputs-haar/out%d.png".format(j)[0..26];
+		string haarOut = "res/outputs-haar/out%d.png".format(j);
 		t.save(haarOut);
 
 		SplitImage i = SplitImage(haarOut);
 		i.dehaar2d;
 
-		string dehaarOut = "res/outputs/out%02d.png".format(j)[0..21];
+		string dehaarOut = "res/outputs/out%02d.png".format(j);
 		i.save(dehaarOut);
 	}
 

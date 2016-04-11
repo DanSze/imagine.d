@@ -28,21 +28,6 @@ struct SplitImage {
 		size = dim.x;
 	}
 
-/*	this(SplitImage img) {
-		size = img.size;
-		rgb.length = size;
-		for (int y = 0; y < size; y++) {
-			rgb[y].length = size;
-			for (int x = 0; x < size; x++) {
-				rgb[y][x].length = 4;
-				rgb[y][x][0] = img.rgb[y][x][0];
-				rgb[y][x][1] = img.rgb[y][x][1];
-				rgb[y][x][2] = img.rgb[y][x][2];
-				rgb[y][x][3] = img.rgb[y][x][3];
-			}
-		}
-	}*/
-
 	void save (string path) {
 		Image i = new Image();
 		ubyte[] data = rgb.transposed.byElement.map!(a => cast(ubyte)(a*0xFF)).array;
@@ -81,7 +66,7 @@ body
     {
         auto s = input
             .chunks(shape[$ - 1])
-            .map!(chunk => chunk.fwt97)
+            .map!(chunk => chunk.rfwt97)
             .reduce!"a ~ b"
             .sliced(shape)
             .transposed(Dimensions.length - 1);
@@ -91,6 +76,24 @@ body
     }
 
     return input;
+}
+
+T[] rfwt97(T)(T[] input) if(isNumeric!T)
+in
+{
+    assert(input.length > 1, "Input length must be greater than 1.");
+    assert((input.length & (input.length - 1)) == 0, "Input length is not power of 2.");
+}
+body
+{
+	int size = input.length;
+
+	for (int i = size; i > 2; i /= 2)
+	{
+		input = input[0..i].fwt97
+	}
+
+	return input
 }
 
 T[] fwt97(T)(T[] input) if(isNumeric!T)
@@ -216,7 +219,7 @@ body
     {
         auto s = input
             .chunks(shape[$ - 1])
-            .map!(chunk => chunk.ifwt97)
+            .map!(chunk => chunk.rifwt97)
             .reduce!"a ~ b"
             .sliced(shape)
             .transposed(Dimensions.length - 1);
@@ -228,7 +231,24 @@ body
     return input;
 }
 
-@property
+T[] rifwt97(T)(T[] input) if(isNumeric!T)
+in
+{
+    assert(input.length > 1, "Input length must be greater than 1.");
+    assert((input.length & (input.length - 1)) == 0, "Input length is not power of 2.");
+}
+body
+{
+	int size = input.length;
+
+	for (int i = 4; i <= size; i *= 2)
+	{
+		input = input[0..i].ifwt97
+	}
+
+	return input
+}
+
 T[] ifwt97(T)(T[] input) if(isNumeric!T)
 in
 {
