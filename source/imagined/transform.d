@@ -86,14 +86,14 @@ in
 }
 body
 {
-	int size = input.length;
+	auto size = input.length;
 
-	for (int i = size; i > 2; i /= 2)
+	for (auto i = size; i > 2; i /= 2)
 	{
-		input = input[0..i].fwt97
+		input[0..i] = input[0..i].fwt97;
 	}
 
-	return input
+	return input;
 }
 
 T[] fwt97(T)(T[] input) if(isNumeric!T)
@@ -239,14 +239,14 @@ in
 }
 body
 {
-	int size = input.length;
+	auto size = input.length;
 
-	for (int i = 4; i <= size; i *= 2)
+	for (auto i = 4; i <= size; i *= 2)
 	{
-		input = input[0..i].ifwt97
+		input[0..i] = input[0..i].ifwt97;
 	}
 
-	return input
+	return input;
 }
 
 T[] ifwt97(T)(T[] input) if(isNumeric!T)
