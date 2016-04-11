@@ -6,6 +6,7 @@ import std.conv;
 import std.experimental.ndslice;
 import std.range;
 import std.traits;
+import std.string;
 
 import dsfml.graphics;
 import dsfml.system;
@@ -58,42 +59,30 @@ in
 }
 body
 {
-    auto shape = input
-        .sliced(dimensions)
-        .shape;
-
-    foreach(index; shape.length.iota)
-    {
-        auto s = input
-            .chunks(shape[$ - 1])
-            .map!(chunk => chunk.rfwt97)
-            .reduce!"a ~ b"
-            .sliced(shape)
-            .transposed(Dimensions.length - 1);
-
-        input = s.byElement.array;
-        shape = s.shape;
-    }
-
-    return input;
-}
-
-T[] rfwt97(T)(T[] input) if(isNumeric!T)
-in
-{
-    assert(input.length > 1, "Input length must be greater than 1.");
-    assert((input.length & (input.length - 1)) == 0, "Input length is not power of 2.");
-}
-body
-{
-	auto size = input.length;
+	auto image = input.sliced(dimensions);
+	auto size = image.shape[0]; //Guaranteed to be po2 because reasons
 
 	for (auto i = size; i > 2; i /= 2)
 	{
-		input[0..i] = input[0..i].fwt97;
+		enum accessor = "[0..size]".repeat.take(Dimensions.length).reduce!"a ~ b";
+		enum current_mix = "auto current = image%s;".format(accessor);
+		mixin(current_mix);
+	    foreach(index; current.shape.length.iota)
+	    {
+	        auto s = current
+	        	.byElement
+	        	.array
+	            .chunks(current.shape[$ - 1])
+	            .map!(chunk => chunk.fwt97)
+	            .reduce!"a ~ b"
+	            .sliced(current.shape)
+	            .transposed(Dimensions.length - 1);
+	    }
+		enum image_mix = "image%s[] = current;".format(accessor);
+		mixin(image_mix);
 	}
 
-	return input;
+    return image.byElement.array;
 }
 
 T[] fwt97(T)(T[] input) if(isNumeric!T)
@@ -211,42 +200,30 @@ in
 }
 body
 {
-    auto shape = input
-        .sliced(dimensions)
-        .shape;
+	auto image = input.sliced(dimensions);
+	auto size = image.shape[0]; //Guaranteed to be po2 because reasons
 
-    foreach(index; shape.length.iota)
-    {
-        auto s = input
-            .chunks(shape[$ - 1])
-            .map!(chunk => chunk.rifwt97)
-            .reduce!"a ~ b"
-            .sliced(shape)
-            .transposed(Dimensions.length - 1);
-
-        input = s.byElement.array;
-        shape = s.shape;
-    }
-
-    return input;
-}
-
-T[] rifwt97(T)(T[] input) if(isNumeric!T)
-in
-{
-    assert(input.length > 1, "Input length must be greater than 1.");
-    assert((input.length & (input.length - 1)) == 0, "Input length is not power of 2.");
-}
-body
-{
-	auto size = input.length;
-
-	for (auto i = 4; i <= size; i *= 2)
+	for (auto i = 4; i <= size ; i *= 2)
 	{
-		input[0..i] = input[0..i].ifwt97;
+		enum accessor = "[0..size]".repeat.take(Dimensions.length).reduce!"a ~ b";
+		enum current_mix = "auto current = image%s;".format(accessor);
+		mixin(current_mix);
+	    foreach(index; current.shape.length.iota)
+	    {
+	        auto s = current
+	        	.byElement
+	        	.array
+	            .chunks(current.shape[$ - 1])
+	            .map!(chunk => chunk.ifwt97)
+	            .reduce!"a ~ b"
+	            .sliced(current.shape)
+	            .transposed(Dimensions.length - 1);
+	    }
+		enum image_mix = "image%s[] = current;".format(accessor);
+		mixin(image_mix);
 	}
 
-	return input;
+    return image.byElement.array;
 }
 
 T[] ifwt97(T)(T[] input) if(isNumeric!T)
