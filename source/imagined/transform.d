@@ -1,7 +1,11 @@
 module imagine.transform;
 
 import std.algorithm;
+import std.array;
+import std.conv;
+import std.experimental.ndslice;
 import std.range;
+import std.traits;
 
 import dsfml.graphics;
 import dsfml.system;
@@ -10,7 +14,7 @@ import imagine.util;
 ///For haaring po2 images
 struct SplitImage {
 
-	float[][][] rgb;
+	Slice!(2, double*) rgb;
 	uint size;
 
 	this(string path) {
@@ -19,13 +23,12 @@ struct SplitImage {
 
 		Vector2u dim = i.getSize();
 
-		rgb = i.getPixelArray().map!(a => a/255f).array.chunks(4).array.chunks(dim.x).array;
-		assert(rgb.length == dim.y);
+		rgb = i.getPixelArray().map!(a => a/255.0).array.sliced(dim.x*dim.y, 4).transposed;
 
 		size = dim.x;
 	}
 
-	this(SplitImage img) {
+/*	this(SplitImage img) {
 		size = img.size;
 		rgb.length = size;
 		for (int y = 0; y < size; y++) {
@@ -38,83 +41,290 @@ struct SplitImage {
 				rgb[y][x][3] = img.rgb[y][x][3];
 			}
 		}
-	}
+	}*/
 
 	void save (string path) {
 		Image i = new Image();
-		float[] flatRgb;
-		foreach (row ; rgb) {
-			foreach (pixel ; row) {
-				flatRgb ~= pixel;
-			}
-		}
-		ubyte[] data = flatRgb.map!(a => cast(ubyte)(a*0xFF)).array;
+		ubyte[] data = rgb.transposed.byElement.map!(a => cast(ubyte)(a*0xFF)).array;
 
 		i.create(size, size, data);
 		i.saveToFile(path);
 	}
 
 	void haar2d () {
-		SplitImage buf = SplitImage(this);
-		haar2d(size, 0, buf);
-		haar2d(size, 1, buf);
-		haar2d(size, 2, buf);
+		for (int i = 0; i < 4; i++) {
+			rgb[i][] = rgb[i].byElement.array.fwt97(size, size);
+		}
 	}
 
 	void dehaar2d () {
-		SplitImage buf = SplitImage(this);
-		dehaar2d(4, 0, buf);
-		dehaar2d(4, 1, buf);
-		dehaar2d(4, 2, buf);
-	}
-
-	private:
-	void haar2d (uint bounds, uint index, SplitImage buf) {
-		if (bounds == 2)
-			return;
-		for (int x = 0; x < bounds; x++) {
-			for (int y = 0; y < bounds/2; y++) {
-				buf.rgb[y][x][index] = (rgb[y*2][x][index] + rgb[y*2 + 1][x][index])/2f;
-				buf.rgb[y + bounds/2][x][index] = (rgb[y*2][x][index] - rgb[y*2 + 1][x][index])/2f;
-			}
-		}
-		cloneRgb(buf);
-		for (int y = 0; y < bounds; y++) {
-			for (int x = 0; x < bounds/2; x++) {
-				buf.rgb[y][x][index] = (rgb[y][x*2][index] + rgb[y][x*2 + 1][index])/2f;
-				buf.rgb[y][x + bounds/2][index] = (rgb[y][x*2][index] - rgb[y][x*2 + 1][index])/2f;
-			}
-		}
-		cloneRgb(buf);
-		haar2d(bounds/2, index, buf);
-	}
-
-	void dehaar2d (uint bounds, uint index, SplitImage buf) {
-		if (bounds > size)
-			return;
-		for (int x = 0; x < bounds; x++) {
-			for (int y = 0; y < bounds/2; y++) {
-				buf.rgb[y*2][x][index]   = rgb[y][x][index] + rgb[y + bounds/2][x][index];
-				buf.rgb[y*2+1][x][index] = rgb[y][x][index] - rgb[y + bounds/2][x][index];
-			}
-		}
-		cloneRgb(buf);
-		for (int y = 0; y < bounds; y++) {
-			for (int x = 0; x < bounds/2; x++) {
-				buf.rgb[y][x*2][index]   = rgb[y][x][index] + rgb[y][x + bounds/2][index];
-				buf.rgb[y][x*2+1][index] = rgb[y][x][index] - rgb[y][x + bounds/2][index];
-			}
-		}
-		cloneRgb(buf);
-		dehaar2d(bounds*2, index, buf);
-	}
-
-	void cloneRgb(SplitImage img) {
-		for (int y = 0; y < size; y++) {
-			for (int x = 0; x < size; x++) {
-				rgb[y][x][] = img.rgb[y][x].dup;
-			}
+		for (int i = 0; i < 4; i++) {
+			rgb[i][] = rgb[i].byElement.array.ifwt97(size, size);
 		}
 	}
 }
 
+T[] fwt97(T, Dimensions...)(T[] input, Dimensions dimensions)
+    if(isNumeric!T && Dimensions.length > 0)
+in
+{
+    assert(input.length > 1, "Input length must be greater than 1.");
+    assert((input.length & (input.length - 1)) == 0, "Input length is not power of 2.");
+}
+body
+{
+    auto shape = input
+        .sliced(dimensions)
+        .shape;
+
+    foreach(index; shape.length.iota)
+    {
+        auto s = input
+            .chunks(shape[$ - 1])
+            .map!(chunk => chunk.fwt97)
+            .reduce!"a ~ b"
+            .sliced(shape)
+            .transposed(Dimensions.length - 1);
+
+        input = s.byElement.array;
+        shape = s.shape;
+    }
+
+    return input;
+}
+
+T[] fwt97(T)(T[] input) if(isNumeric!T)
+in
+{
+    assert(input.length > 1, "Input length must be greater than 1.");
+    assert((input.length & (input.length - 1)) == 0, "Input length is not power of 2.");
+}
+body
+{
+    static if(!is(T == double))
+    {
+        double[] data = input.map!(to!double).array;
+    }
+    else
+    {
+        double[] data = input.dup;
+    }
+
+    // - Predict 1 - //
+
+    {
+        enum double a = -1.586134342;
+
+        for(auto index = 1; index < data.length - 2; index += 2)
+        {
+            data[index] += a * (data[index - 1] + data[index + 1]);
+        }
+
+        data[$ - 1] += 2 * a * data[$ - 2];
+    }
+
+    // - Update 1 - //
+
+    {
+        enum double a = -0.05298011854;
+
+        for(auto index = 2; index < data.length; index += 2)
+        {
+            data[index] += a * (data[index - 1] + data[index + 1]);
+        }
+
+        data[0] += 2 * a * data[1];
+    }
+
+    // - Predict 2 - //
+
+    {
+        enum double a = 0.8829110762;
+
+        for(auto index = 1; index < data.length - 2; index += 2)
+        {
+            data[index] += a * (data[index - 1] + data[index + 1]);
+        }
+
+        data[$ - 1] += 2 * a * data[$ - 2];
+    }
+
+    // - Update 2 - //
+
+    {
+        enum double a = 0.4435068522;
+
+        for(auto index = 2; index < data.length; index += 2)
+        {
+            data[index] += a * (data[index - 1] + data[index + 1]);
+        }
+
+        data[0] += 2 * a * data[1];
+    }
+
+    // - Scale - //
+
+    {
+        enum double a = 1 / 1.149604398;
+
+        foreach(index; 0 .. data.length)
+        {
+            if(index % 2 == 1)
+            {
+                data[index] *= a;
+            }
+            else
+            {
+                data[index] /= a;
+            }
+        }
+    }
+
+    // - Pack - //
+
+    T[] output = new T[data.length];
+
+    foreach(index; 0 .. data.length)
+    {
+        if(index % 2 == 0)
+        {
+            output[index / 2] = cast(T) data[index];
+        }
+        else
+        {
+            output[index / 2 + data.length / 2] = cast(T) data[index];
+        }
+    }
+
+    return output;
+}
+
+T[] ifwt97(T, Dimensions...)(T[] input, Dimensions dimensions)
+    if(isNumeric!T && Dimensions.length > 0)
+in
+{
+    assert(input.length > 1, "Input length must be greater than 1.");
+    assert((input.length & (input.length - 1)) == 0, "Input length is not power of 2.");
+}
+body
+{
+    auto shape = input
+        .sliced(dimensions)
+        .shape;
+
+    foreach(index; shape.length.iota)
+    {
+        auto s = input
+            .chunks(shape[$ - 1])
+            .map!(chunk => chunk.ifwt97)
+            .reduce!"a ~ b"
+            .sliced(shape)
+            .transposed(Dimensions.length - 1);
+
+        input = s.byElement.array;
+        shape = s.shape;
+    }
+
+    return input;
+}
+
+@property
+T[] ifwt97(T)(T[] input) if(isNumeric!T)
+in
+{
+    assert(input.length > 1, "Input length must be greater than 1.");
+    assert((input.length & (input.length - 1)) == 0, "Input length is not power of 2.");
+}
+body
+{
+    // - Unpack - //
+
+    double[] data = new double[input.length];
+
+    foreach(index; 0 .. data.length / 2)
+    {
+        data[index * 2 + 0] = input[index + 0];
+        data[index * 2 + 1] = input[index + $ / 2];
+    }
+
+    // - Reverse Scale - //
+
+    {
+        enum double a = 1.149604398;
+
+        foreach(index; 0 .. data.length)
+        {
+            if(index % 2 == 1)
+            {
+                data[index] *= a;
+            }
+            else
+            {
+                data[index] /= a;
+            }
+        }
+    }
+
+    // - Reverse Update 2 - //
+
+    {
+        enum double a = -0.4435068522;
+
+        for(auto index = 2; index < data.length; index += 2)
+        {
+            data[index] += a * (data[index - 1] + data[index + 1]);
+        }
+
+        data[0] += 2 * a * data[1];
+    }
+
+    // - Reverse Predict 2 - //
+
+    {
+        enum double a = -0.8829110762;
+
+        for(auto index = 1; index < data.length - 2; index += 2)
+        {
+            data[index] += a * (data[index - 1] + data[index + 1]);
+        }
+
+        data[$ - 1] += 2 * a * data[$ - 2];
+    }
+
+    // - Reverse Update 1 - //
+
+    {
+        enum double a = 0.05298011854;
+
+        for(auto index = 2; index < data.length; index += 2)
+        {
+            data[index] += a * (data[index - 1] + data[index + 1]);
+        }
+
+        data[0] += 2 * a * data[1];
+    }
+
+    // - Reverse Predict 1 - //
+
+    {
+        enum double a = 1.586134342;
+
+        for(auto index = 1; index < data.length - 2; index += 2)
+        {
+            data[index] += a * (data[index - 1] + data[index + 1]);
+        }
+
+        data[$ - 1] += 2 * a * data[$ - 2];
+    }
+
+    // - Result - //
+
+    static if(!isFloatingPoint!T)
+    {
+        return data.map!(to!T).array;
+    }
+    else
+    {
+        return data;
+    }
+}

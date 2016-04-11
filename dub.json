@@ -3,7 +3,8 @@
 	"description": "A minimal D application.",
 	"copyright": "Copyright © 2015, Dan",
 	"authors": ["DanSze"],
+	"lflags" : ["/LIBPATH:dsfmlc\\"],
 	"dependencies": {
-		"dsfml:graphics": "~master"
+		"dsfml:graphics": ">=2.1.0"
 	},
 }
