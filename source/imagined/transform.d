@@ -67,9 +67,9 @@ body
 		enum accessor = "[0..size]".repeat.take(Dimensions.length).reduce!"a ~ b";
 		enum current_mix = "auto current = image%s;".format(accessor);
 		mixin(current_mix);
-	    foreach(index; current.shape.length.iota)
+	    foreach(index; iota(0,current.shape.length))
 	    {
-	        auto s = current
+	       current = current
 	        	.byElement
 	        	.array
 	            .chunks(current.shape[$ - 1])
@@ -210,7 +210,7 @@ body
 		mixin(current_mix);
 	    foreach(index; current.shape.length.iota)
 	    {
-	        auto s = current
+	       current = current
 	        	.byElement
 	        	.array
 	            .chunks(current.shape[$ - 1])

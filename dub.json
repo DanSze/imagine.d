@@ -5,6 +5,8 @@
 	"authors": ["DanSze"],
 	"lflags" : ["/LIBPATH:dsfmlc\\"],
 	"dependencies": {
-		"dsfml:graphics": ">=2.1.0"
+		"dsfml:graphics": {
+			"path": "../DSFML"
+		}
 	},
 }
