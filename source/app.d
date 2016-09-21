@@ -21,7 +21,11 @@ auto loadImages() {
 void main(string[] args) {
 	auto images = loadImages;
 
-	foreach (image; images) {
+	images = images.map!(a => a.binarize);
 
+	exists("res/outputs") ? 0 : mkdir("res/outputs"); //I am satan.
+
+	foreach (i, image; images) {
+		imwrite(image, format("res/outputs/%d.png", i);
 	}
 }

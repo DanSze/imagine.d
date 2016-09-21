@@ -11,3 +11,6 @@ import std.string;
 import dcv;
 import imagine.util;
 
+auto binarize(Image i) {
+    return i.sliced.theshold!float(0.5, 1);
+}
