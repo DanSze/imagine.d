@@ -25,12 +25,16 @@ void main(string[] args) {
 		writeln(dir);
 	}
 
-	auto images = loadImages.map!(a => a.binarize);
+	ubyte sensitivity = args.length > 1 ? args[1].to!ubyte : 50;
+
+	auto images = loadImages.map!(a => a.binarize(sensitivity));
 
 	exists("res/outputs") ? 0 : mkdir("res/outputs"); //I am satan.
 
 	int i = 0;
 	foreach (image; images) {
-		imwrite(image, format("res/outputs/%d.png", i++));
+		auto dir = format("res/outputs/%d.png", i++)
+		writeln(dir);
+		imwrite(image, dir);
 	}
 }
