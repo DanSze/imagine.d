@@ -22,7 +22,7 @@ auto loadImages() {
 }
 
 void main(string[] args) {
-	foreach (dir; dirEntries("res/sources")) {
+	foreach (dir; dirEntries("res/sources", SpanMode.shallow)) {
 		writeln(dir.name);
 	}
 
