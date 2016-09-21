@@ -18,7 +18,7 @@ int maxSize;
 auto loadImages() {
 	return dirEntries("res/sources", SpanMode.shallow)
 		.filter!(a => a.isFile())
-		.map!   (a => imread(a));
+		.map!   (a => imread(a.name));
 }
 
 void main(string[] args) {
