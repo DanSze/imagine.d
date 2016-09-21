@@ -15,11 +15,9 @@ import imagine.d;
 
 int maxSize;
 
-auto fileRegex = regex(r".+\..+");
-
 auto loadImages() {
 	return dirEntries("res/sources", SpanMode.shallow)
-		.filter!(a => !matchFirst(a, fileRegex).empty)
+		.filter!(a => a.isFile())
 		.map!   (a => imread(a));
 }
 
