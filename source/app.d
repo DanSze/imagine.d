@@ -26,7 +26,7 @@ void main(string[] args) {
 		writeln(dir);
 	}
 
-	ubyte sensitivity = args.length > 1 ? args[1].to!ubyte : 50;
+	auto sensitivity = args.length > 1 ? args[1].to!float : 1.0;
 
 	auto images = loadImages.map!(a => a.binarize(sensitivity));
 

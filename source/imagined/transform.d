@@ -12,6 +12,14 @@ import dcv.core;
 import dcv.imgproc;
 import imagine.util;
 
-auto binarize(Image i, ubyte b) {
-    return i.sliced.threshold!ubyte(b).asImage(i.format);
+auto binarize(Image img, float sensitivity) {
+    ulong divisor = floor(img.width*img.height*sensitivity).to!ulong;
+    auto slice = img.sliced;
+    for (int i = 0; i < img.channels; i++) {
+        auto sl = slice[0..$, 0..$, i];
+        auto avg = min(255, size_t(0).ndReduce!"a + b"(sl)/divisor);
+        sl[] = sl.threshold!ubyte(avg.to!ubyte)[];    
+    }
+
+    return slice.asImage(img.format);
 }
