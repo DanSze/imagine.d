@@ -17,21 +17,20 @@ int maxSize;
 
 auto loadImages() {
 	return dirEntries("res/sources", SpanMode.shallow)
-		.filter!(a => a.isFile())
-		.map!   (a => imread(a.name));
+		.map!(a => imread(a));
 }
 
 void main(string[] args) {
 	foreach (dir; dirEntries("res/sources", SpanMode.shallow)) {
-		writeln(dir.name);
+		writeln(dir);
 	}
 
-	//auto images = loadImages.map!(a => a.binarize);
+	auto images = loadImages.map!(a => a.binarize);
 
 	exists("res/outputs") ? 0 : mkdir("res/outputs"); //I am satan.
 
 	int i = 0;
-	//foreach (image; images) {
-	//	imwrite(image, format("res/outputs/%d.png", i++));
-	//}
+	foreach (image; images) {
+		imwrite(image, format("res/outputs/%d.png", i++));
+	}
 }
