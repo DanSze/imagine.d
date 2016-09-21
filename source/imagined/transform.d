@@ -13,5 +13,5 @@ import dcv.imgproc;
 import imagine.util;
 
 auto binarize(Image i) {
-    return i.sliced.theshold!ubyte(127);
+    return i.sliced.threshold!ubyte(127);
 }
