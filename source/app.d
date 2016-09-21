@@ -15,7 +15,7 @@ import imagine.d;
 
 int maxSize;
 
-auto fileRegex = ctRegex(r".+\..+");
+auto fileRegex = regex(r".+\..+");
 
 auto loadImages() {
 	return dirEntries("res/sources", SpanMode.shallow)
