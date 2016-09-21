@@ -3,6 +3,7 @@ module main;
 import std.stdio;
 import std.format;
 import std.file;
+import std.conv;
 import std.algorithm;
 import std.array;
 import std.regex;
@@ -33,7 +34,7 @@ void main(string[] args) {
 
 	int i = 0;
 	foreach (image; images) {
-		auto dir = format("res/outputs/%d.png", i++)
+		auto dir = format("res/outputs/%d.png", i++);
 		writeln(dir);
 		imwrite(image, dir);
 	}
