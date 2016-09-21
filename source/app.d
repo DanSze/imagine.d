@@ -26,12 +26,12 @@ void main(string[] args) {
 		writeln(dir.name);
 	}
 
-	auto images = loadImages.map!(a => a.binarize);
+	//auto images = loadImages.map!(a => a.binarize);
 
 	exists("res/outputs") ? 0 : mkdir("res/outputs"); //I am satan.
 
 	int i = 0;
-	foreach (image; images) {
-		imwrite(image, format("res/outputs/%d.png", i++));
-	}
+	//foreach (image; images) {
+	//	imwrite(image, format("res/outputs/%d.png", i++));
+	//}
 }
