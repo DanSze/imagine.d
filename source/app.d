@@ -9,7 +9,8 @@ import std.regex;
 import std.datetime;
 import std.random;
 
-import dcv;
+import dcv.core;
+import dcv.io;
 import imagine.d;
 
 int maxSize;

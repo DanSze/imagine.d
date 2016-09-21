@@ -8,9 +8,10 @@ import std.range;
 import std.traits;
 import std.string;
 
-import dcv;
+import dcv.core;
+import dcv.imgproc;
 import imagine.util;
 
 auto binarize(Image i) {
-    return i.sliced.theshold!float(0.5, 1);
+    return i.sliced.theshold!ubyte(127);
 }
