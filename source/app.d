@@ -22,6 +22,10 @@ auto loadImages() {
 }
 
 void main(string[] args) {
+	for (dir; dirEntries("res/sources")) {
+		writeln(dir.name);
+	}
+
 	auto images = loadImages.map!(a => a.binarize);
 
 	exists("res/outputs") ? 0 : mkdir("res/outputs"); //I am satan.
