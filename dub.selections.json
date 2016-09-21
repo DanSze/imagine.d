@@ -1,4 +1,20 @@
 {
 	"fileVersion": 1,
-	"versions": {}
+	"versions": {
+		"cairod": "0.0.1-alpha.3+1.10.2",
+		"cpuid": "0.2.6",
+		"dcv": "0.1.3",
+		"derelict-ft": "1.0.2",
+		"derelict-util": "2.1.0",
+		"dstats": "1.0.3",
+		"dunit": "1.0.12",
+		"ffmpeg-d": "2.5.1",
+		"ggplotd": "0.9.4",
+		"gtk-d": "3.2.3",
+		"imageformats": "6.1.0",
+		"mir": "0.17.0-alpha9",
+		"painlesstraits": "0.2.0",
+		"windows-headers": "1.0.1",
+		"x11": "1.0.15"
+	}
 }
