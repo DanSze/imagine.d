@@ -24,7 +24,8 @@ void main(string[] args) {
 
 	exists("res/outputs") ? 0 : mkdir("res/outputs"); //I am satan.
 
-	foreach (i, image; images) {
-		imwrite(image, format("res/outputs/%d.png", i));
+	int i = 0;
+	foreach (image; images) {
+		imwrite(image, format("res/outputs/%d.png", i++));
 	}
 }
