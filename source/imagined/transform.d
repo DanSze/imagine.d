@@ -12,16 +12,25 @@ import dcv.core;
 import dcv.imgproc;
 import imagine.util;
 
-const blockWidth = 50;
-
-auto binarize(Image img, float sensitivity) {
-    auto iSlice = img.sliced;
+auto filter(Image img, float sensitivity) {
+    auto slice = img.sliced;
+    auto avgs = new float[img.channels];
     for (int i = 0; i < img.channels; i++) {
-        auto sl = iSlice[0..$, 0..$, i];
-        auto avg = min(255, sl.byElement.reduce!"a+b"/sl.elementsCount*sensitivity);
-        auto slMask = sl.threshold!ubyte((avg).to!ubyte);
-	sl[] &= slMask;
+
+        auto sl = slice[0..$, 0..$, i];
+        avgs[i] = min(255, sl.byElement.reduce!"a+b"/sl.elementsCount*sensitivity);
+    } 
+
+    auto avg = avgs.reduce!"a+b"/avgs.length;
+    
+    for (int i = 0; i < img.channels; i++) {
+        auto sl = slice[0..$, 0..$, i];
+        avgs[i] = min(255, sl.byElement.reduce!"a+b"/sl.elementsCount*sensitivity);
+        auto slMask = sl.threshold!ubyte((avgs[i]).to!ubyte);
+
+        sl[] &= slMask;
     }
 
-    return iSlice.asImage(img.format);
+
+    return slice.asImage(img.format);
 }
