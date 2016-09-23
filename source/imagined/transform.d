@@ -25,15 +25,15 @@ auto improve(Image img, float sensitivity) {
     }
 
     for (int i = 0; i < img.channels; i++) {
-	auto low = lowlights[0..$, 0..$, i];
-	auto sl = slice[0..$, 0..$, i];
-	auto avg = min(255, sl.byElement.reduce!"a+b"/sl.elementsCount*sensitivity);
+        auto low = lowlights[0..$, 0..$, i];
+        auto sl = slice[0..$, 0..$, i];
+        auto avg = min(255, sl.byElement.reduce!"a+b"/sl.elementsCount*sensitivity);
         auto slMask = low.threshold!ubyte(0, (avg).to!ubyte);
 
         low[] &= slMask;
-	auto elem = low.byElement.retro;
-	bringToFront(elem[0 .. $-avg.to!ubyte], elem[$-avg.to!ubyte .. $]);
-	low[] = elem.retro.array.sliced(img.height, img.width);
+        auto elem = low.byElement.retro;
+        bringToFront(elem[0 .. $-avg.to!ubyte], elem[$-avg.to!ubyte .. $]);
+        low[] = elem.retro.array.sliced(img.height, img.width);
     }
     
     slice[] += lowlights;
@@ -43,7 +43,6 @@ auto improve(Image img, float sensitivity) {
 auto adjust(Slice img, float intensity) {
     auto random = Random[0..img.elementsCount]
                 .map!(a => (a < intensity).to!float).array[]
-                * img.elementsCount.iota.array[];
     auto wmap = roundRobin(random, random).array.sliced(img.shape[0], img.shape[1], 2);
 
     return img.warp(wmap)
