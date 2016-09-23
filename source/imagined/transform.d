@@ -36,13 +36,19 @@ auto improve(Image img, float sensitivity) {
         low[] = elem.retro.array.sliced(img.height, img.width);
     }
     
-    slice[] += lowlights;
+    //slice[] += lowlights;
     return slice.asImage(img.format);
 }
 
 auto adjust(Image img, float intensity) {
-    auto random = (img.width*img.height).iota.map!(a => uniform(0, 2).to!float);
-    auto wmap = roundRobin(random, random).array.sliced(img.height, img.width, 2);
+    auto slice = img.sliced;
+    auto windows = slice.windows(3,3);
+    foreach (window; windows.byElement) {
+        auto naturalIntensity = min(255, window.byElement.reduce!"a+b"/window.elementsCount)/255.0 + 0.25;
+        if (uniform01!float < intensity/naturalIntensity) {
+            window[] = 255;
+        }
+    }
 
-    return img.sliced.warp(wmap).asImage(img.format);
+    return slice.asImage(img.format);
 }
