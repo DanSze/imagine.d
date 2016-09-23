@@ -28,7 +28,7 @@ void main(string[] args) {
 
 	auto sensitivity = args.length > 1 ? args[1].to!float : 1.0;
 
-	auto images = loadImages.map!(a => a.filter(sensitivity).asType!ubyte);
+	auto images = loadImages.map!(a => a.improve(sensitivity).asType!ubyte);
 
 	exists("res/outputs") ? 0 : mkdir("res/outputs"); //I am satan.
 

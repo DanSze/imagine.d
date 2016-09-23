@@ -4,7 +4,7 @@ import std.algorithm;
 import std.array;
 import std.conv;
 import std.range;
-import std.traits;
+import std.random;
 import std.math;
 import std.string;
 import std.stdio;
@@ -13,12 +13,12 @@ import dcv.core;
 import dcv.imgproc;
 import imagine.util;
 
-auto filter(Image img, float sensitivity) {
+auto improve(Image img, float sensitivity) {
     auto slice = img.sliced;
     auto lowlights = slice.slice;
     for (int i = 0; i < img.channels; i++) {
         auto sl = slice[0..$, 0..$, i];
-	auto avg = min(255, sl.byElement.reduce!"a+b"/sl.elementsCount*sensitivity);
+        auto avg = min(255, sl.byElement.reduce!"a+b"/sl.elementsCount*sensitivity);
         auto slMask = sl.threshold!ubyte((avg).to!ubyte);
 
         sl[] &= slMask;
@@ -37,5 +37,14 @@ auto filter(Image img, float sensitivity) {
     }
     
     slice[] += lowlights;
-    return slice.asImage(img.format);
+    return slice.adjust(0.1).asImage(img.format);
+}
+
+auto adjust(Slice img, float intensity) {
+    auto random = Random[0..img.elementsCount]
+                .map!(a => (a < intensity).to!float).array[]
+                * img.elementsCount.iota.array[];
+    auto wmap = roundRobin(random, random).array.sliced(img.shape[0], img.shape[1], 2);
+
+    return img.warp(wmap)
 }
