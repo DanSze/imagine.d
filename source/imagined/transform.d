@@ -37,13 +37,12 @@ auto improve(Image img, float sensitivity) {
     }
     
     slice[] += lowlights;
-    return slice.adjust(0.1).asImage(img.format);
+    return slice.asImage(img.format);
 }
 
-auto adjust(Slice img, float intensity) {
-    auto random = Random[0..img.elementsCount]
-                .map!(a => (a < intensity).to!float).array[]
-    auto wmap = roundRobin(random, random).array.sliced(img.shape[0], img.shape[1], 2);
+auto adjust(Image img, float intensity) {
+    auto random = (img.width*img.height).iota.map!(a => uniform(0, 2).to!float);
+    auto wmap = roundRobin(random, random).array.sliced(img.height, img.width, 2);
 
-    return img.warp(wmap)
+    return img.sliced.warp(wmap).asImage(img.format);
 }
